@@ -2,10 +2,12 @@ package ro.pub.cs.systems.eim.Colocviu1_13;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Colocviu1_13MainActivity extends AppCompatActivity {
 
@@ -19,8 +21,19 @@ public class Colocviu1_13MainActivity extends AppCompatActivity {
             numPushes ++;
         }
     }
+    private ButtonSecondClickListener buttonSecondClickListener = new ButtonSecondClickListener();
+    private class ButtonSecondClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            Intent intent = new Intent(getApplicationContext(), Colocviu1_13SecondaryActivity.class);
+            intent.putExtra(Constants.RegisterIntent, textView.getText().toString());
+            startActivityForResult(intent, Constants.SECONDARY_ACTIVITY_REQUEST_CODE);
+            textView.setText("");
+            numPushes = 0;
+        }
+    }
 
-    private Button northButton, eastButton, southButton, westButton;
+    private Button northButton, eastButton, southButton, westButton, secondaryActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,12 +47,21 @@ public class Colocviu1_13MainActivity extends AppCompatActivity {
         southButton = findViewById(R.id.southButton);
         southButton.setOnClickListener(buttonClickListener);
         textView = findViewById(R.id.directii);
+        secondaryActivity = findViewById(R.id.secondaryActivity);
+        secondaryActivity.setOnClickListener(buttonSecondClickListener);
 
         if (savedInstanceState != null) {
             if (savedInstanceState.containsKey(Constants.NumPushes))
                 numPushes = savedInstanceState.getInt(Constants.NumPushes);
             else
                 numPushes = 0;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == Constants.SECONDARY_ACTIVITY_REQUEST_CODE) {
+            Toast.makeText(this, "The activity returned with result " + resultCode, Toast.LENGTH_LONG).show();
         }
     }
 
