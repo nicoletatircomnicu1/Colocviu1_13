@@ -2,14 +2,28 @@ package ro.pub.cs.systems.eim.Colocviu1_13;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class Colocviu1_13MainActivity extends AppCompatActivity {
+
+    private MessageBroadcastReceiver messageBroadcastReceiver = new MessageBroadcastReceiver();
+    private class MessageBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(Constants.BROADCAST_RECEIVER_TAG, intent.getStringExtra(Constants.BROADCAST_RECEIVER_EXTRA));
+        }
+    }
+
+    private IntentFilter intentFilter = new IntentFilter();
 
     private ButtonClickListener buttonClickListener = new ButtonClickListener();
     private TextView textView;
@@ -30,6 +44,12 @@ public class Colocviu1_13MainActivity extends AppCompatActivity {
             startActivityForResult(intent, Constants.SECONDARY_ACTIVITY_REQUEST_CODE);
             textView.setText("");
             numPushes = 0;
+
+            if (numPushes > 4) {
+                Intent serviceintent = new Intent(getApplicationContext(), Colocviu1_13Service.class);
+                serviceintent.putExtra(Constants.TEXTSERVICE, textView.getText().toString());
+                getApplicationContext().startService(serviceintent);
+            }
         }
     }
 
@@ -56,6 +76,7 @@ public class Colocviu1_13MainActivity extends AppCompatActivity {
             else
                 numPushes = 0;
         }
+        intentFilter.addAction(Constants.actionTypes);
     }
 
     @Override
@@ -79,5 +100,24 @@ public class Colocviu1_13MainActivity extends AppCompatActivity {
             numPushes = 0;
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(messageBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(messageBroadcastReceiver);
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Intent intent = new Intent(this, Colocviu1_13Service.class);
+        stopService(intent);
+        super.onDestroy();
     }
 }
